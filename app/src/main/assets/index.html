@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Daily Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f5; --card:#ffffff; --ink:#14201d; --muted:#6b7a76; --line:#e3e9e7;
+  --teal:#0f766e; --teal-soft:#d6efec;
+  --sleep:#6d5bd0; --sleep-soft:#ebe8fb;
+  --water:#1e88e5; --water-soft:#e1f0fd;
+  --steps:#e0761b; --steps-soft:#fdeedf;
+  --cal:#d6455d; --cal-soft:#fbe5e9;
+  --radius:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0e1413; --card:#172120; --ink:#e9f1ef; --muted:#93a39f; --line:#26332f;
+    --teal-soft:#123c38; --sleep-soft:#26224a; --water-soft:#132d44; --steps-soft:#3b2814; --cal-soft:#3d1a22; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,sans-serif;font-size:16px}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(84px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px 8px}
+header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px}
+header h1{font-size:24px;margin:0;font-weight:800;letter-spacing:-.02em}
+header .date{color:var(--muted);font-size:14px;margin-top:2px}
+.sync{font-size:12px;color:var(--muted);text-align:right}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--line)}
+.card h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:8px;font-weight:700}
+.dot{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px}
+.row{display:flex;gap:10px;align-items:center}
+.between{justify-content:space-between}
+.big{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.unit{font-size:14px;color:var(--muted);font-weight:500}
+.muted{color:var(--muted);font-size:13px}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:12px 0 4px}
+.bar>i{display:block;height:100%;border-radius:99px;transition:width .4s}
+button{font:inherit;border:0;cursor:pointer;border-radius:12px;padding:11px 14px;font-weight:600;background:var(--line);color:var(--ink)}
+button:active{transform:scale(.97)}
+.btn-p{color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{padding:8px 12px;border-radius:99px;font-size:13px;font-weight:600;background:var(--bg);border:1px solid var(--line)}
+input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+input:focus{outline:2px solid var(--teal);border-color:transparent}
+label.f{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* summary rings */
+.rings{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.ring{position:relative;width:64px;height:64px;margin:0 auto}
+.ring svg{transform:rotate(-90deg)}
+.ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:20px}
+.rings small{display:block;font-size:11px;color:var(--muted);margin-top:4px;font-weight:600}
+.rings b{display:block;font-size:13px}
+/* water glasses */
+.glasses{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.glass{width:30px;height:38px;border-radius:4px 4px 9px 9px;border:2px solid var(--water);position:relative;overflow:hidden;opacity:.45}
+.glass.full{opacity:1}
+.glass.full::after{content:"";position:absolute;left:0;right:0;bottom:0;height:75%;background:var(--water)}
+/* reminder banner */
+#alertBanner{display:none;position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:50;max-width:500px;margin:0 auto;
+  background:var(--water);color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:pop .35s ease}
+#alertBanner .row{margin-top:10px}
+#alertBanner button{background:rgba(255,255,255,.2);color:#fff}
+#alertBanner button.solid{background:#fff;color:var(--water)}
+@keyframes pop{from{transform:translateY(-20px);opacity:0}}
+/* food list */
+.food{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.food:first-child{border-top:0}
+.food .x{background:none;padding:4px 8px;color:var(--muted)}
+/* nav */
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:40}
+nav button{background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted);padding:6px 18px}
+nav button.on{color:var(--teal)}
+nav button .ic{font-size:20px}
+.view{display:none}.view.on{display:block}
+/* week chart */
+.week{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:8px}
+.week .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.week .col i{width:100%;border-radius:6px 6px 3px 3px;min-height:3px}
+.week .col small{font-size:10px;color:var(--muted)}
+.week .col em{font-style:normal;font-size:10px;font-weight:700}
+.goalline{font-size:11px;color:var(--muted);margin-top:6px}
+.toast{position:fixed;bottom:calc(92px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:60}
+.toast.on{opacity:1}
+.tip{background:var(--teal-soft);border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.45}
+</style>
+</head>
+<body>
+
+<div id="alertBanner" role="alert">
+  <div style="font-weight:800;font-size:17px">💧 Time to drink water</div>
+  <div style="font-size:14px;opacity:.9" id="alertText">It's been an hour. Have a glass now.</div>
+  <div class="row">
+    <button class="solid" id="alertDrink">I drank a glass</button>
+    <button id="alertSnooze">Snooze 10 min</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="greet">Good morning</h1>
+      <div class="date" id="todayLabel"></div>
+    </div>
+    <div class="sync" id="syncState">Saved on this device</div>
+  </header>
+
+  <!-- ===== TODAY ===== -->
+  <section class="view on" id="v-today">
+
+    <div class="card">
+      <div class="rings" id="rings"></div>
+    </div>
+
+    <!-- Sleep -->
+    <div class="card">
+      <h2><span class="dot" style="background:var(--sleep-soft)">😴</span>Sleep</h2>
+      <div class="row between">
+        <div><span class="big" id="sleepHrs">–</span> <span class="unit" id="sleepUnit">hrs</span></div>
+        <button class="btn-p" style="background:var(--sleep)" id="wokeBtn">☀️ I just woke up</button>
+      </div>
+      <div class="bar"><i id="sleepBar" style="background:var(--sleep);width:0"></i></div>
+      <div class="muted" id="sleepNote">Set your bedtime and wake-up time</div>
+      <div class="grid2" style="margin-top:12px">
+        <div><label class="f" for="bedT">Went to bed</label><input type="time" id="bedT"></div>
+        <div><label class="f" for="wakeT">Woke up</label><input type="time" id="wakeT"></div>
+      </div>
+    </div>
+
+    <!-- Water -->
+    <div class="card">
+      <h2><span class="dot" style="background:var(--water-soft)">💧</span>Water</h2>
+      <div class="row between">
+        <div><span class="big" id="waterN">0</span> <span class="unit" id="waterUnit">/ 8 glasses</span></div>
+        <div class="row" style="gap:8px">
+          <button id="waterMinus" aria-label="Remove a glass">−</button>
+          <button class="btn-p" style="background:var(--water)" id="waterPlus">+ Glass</button>
+        </div>
+      </div>
+      <div class="glasses" id="glasses"></div>
+      <div class="muted" style="margin-top:10px" id="waterNext">Hourly reminders start when you log your wake-up time.</div>
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button class="chip" id="remToggle">🔔 Reminders: on</button>
+        <button class="chip" id="soundTest">🔊 Test sound</button>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="card">
+      <h2><span class="dot" style="background:var(--steps-soft)">👟</span>Steps</h2>
+      <div><span class="big" id="stepsN">0</span> <span class="unit" id="stepsUnit">/ 8,000</span></div>
+      <div class="bar"><i id="stepsBar" style="background:var(--steps);width:0"></i></div>
+      <div id="stepsAuto" class="muted" style="display:none;margin-top:4px"></div>
+      <div id="stepsManual">
+      <div class="row" style="margin-top:10px">
+        <input type="number" inputmode="numeric" id="stepsIn" placeholder="Today's total, e.g. 6450">
+        <button class="btn-p" style="background:var(--steps);white-space:nowrap" id="stepsSet">Save</button>
+      </div>
+      <div class="chips">
+        <button class="chip" data-addsteps="500">+500</button>
+        <button class="chip" data-addsteps="1000">+1,000</button>
+        <button class="chip" data-addsteps="2000">+2,000</button>
+      </div>
+      <div class="muted" style="margin-top:8px">Copy today's total from your phone's step counter (Google Fit, Samsung Health or Apple Health).</div>
+      </div>
+    </div>
+
+    <!-- Calories -->
+    <div class="card">
+      <h2><span class="dot" style="background:var(--cal-soft)">🍽️</span>Calories</h2>
+      <div><span class="big" id="calN">0</span> <span class="unit" id="calUnit">/ 2,000 kcal</span></div>
+      <div class="bar"><i id="calBar" style="background:var(--cal);width:0"></i></div>
+      <div class="muted" id="calLeft"></div>
+      <div class="chips" id="quickFoods"></div>
+      <div class="row" style="margin-top:12px">
+        <input id="foodName" placeholder="Food (e.g. Khichuri)">
+        <input id="foodCal" type="number" inputmode="numeric" placeholder="kcal" style="max-width:90px">
+        <button class="btn-p" style="background:var(--cal)" id="foodAdd">Add</button>
+      </div>
+      <div id="foodList" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- ===== WEEK ===== -->
+  <section class="view" id="v-week">
+    <div class="card" id="wk-sleep"></div>
+    <div class="card" id="wk-water"></div>
+    <div class="card" id="wk-steps"></div>
+    <div class="card" id="wk-cal"></div>
+  </section>
+
+  <!-- ===== SETTINGS ===== -->
+  <section class="view" id="v-settings">
+    <div class="card">
+      <h2>🎯 Daily goals</h2>
+      <div class="grid2">
+        <div><label class="f" for="gSleep">Sleep (hours)</label><input type="number" step="0.5" id="gSleep"></div>
+        <div><label class="f" for="gWater">Water (glasses)</label><input type="number" id="gWater"></div>
+        <div><label class="f" for="gSteps">Steps</label><input type="number" step="500" id="gSteps"></div>
+        <div><label class="f" for="gCal">Calories (kcal)</label><input type="number" step="50" id="gCal"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>💧 Water reminders</h2>
+      <div class="grid2">
+        <div><label class="f" for="remEvery">Remind every (minutes)</label><input type="number" id="remEvery" min="15" step="15"></div>
+        <div><label class="f" for="remUntil">Stop after</label><input type="time" id="remUntil"></div>
+      </div>
+      <div class="tip" style="margin-top:12px" id="remTip">Reminders pop up and beep while this app is open on your phone. To get alerts even when it's closed, ask Claude to add hourly water reminders to your Google Calendar.</div>
+    </div>
+    <div class="card" id="homeCard">
+      <h2>📲 Put it on your home screen</h2>
+      <div class="muted" style="line-height:1.5">
+        <b>Android (Chrome):</b> open this page, tap ⋮ and then <i>Add to Home screen</i>.<br>
+        <b>iPhone (Safari):</b> tap the Share button and then <i>Add to Home Screen</i>.
+      </div>
+    </div>
+  </section>
+</div>
+
+<nav>
+  <button class="on" data-view="today"><span class="ic">🏠</span>Today</button>
+  <button data-view="week"><span class="ic">📊</span>Week</button>
+  <button data-view="settings"><span class="ic">⚙️</span>Settings</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,"0");
+const dateKey = d => d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+const QUICK = [
+  ["Rice (1 plate)",340],["Roti",120],["Paratha",260],["Egg",75],["Dal (bowl)",150],
+  ["Chicken curry",250],["Fish curry",200],["Vegetables",90],["Tea w/ sugar",60],
+  ["Banana",105],["Apple",95],["Biscuits (4)",150],["Milk (glass)",120],["Singara",160]
+];
+const DEFAULT_SETTINGS = {goals:{sleep:8,water:8,steps:8000,cal:2000}, remEvery:60, remUntil:"22:00", remOn:true};
+const emptyDay = k => ({date:k, bed:"", wake:"", water:0, waterTimes:[], steps:0, foods:[]});
+
+let today = dateKey(new Date());
+let settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+let days = {};           // dateKey -> day object
+let db = null, uid = null;
+const NATIVE = typeof window.Android !== "undefined";
+function nat(fn, ...a){ try{ return window.Android[fn](...a); }catch(e){ return null; } }
+function stepsAuto(){ return NATIVE && nat("hasStepSensor") === true; }
+function pushNative(){
+  if(!NATIVE) return;
+  const d=day(); let on=false, wake=-1, until=-1;
+  if(settings.remOn && d.wake){
+    const [y,m,dd]=today.split("-").map(Number);
+    const w=toMin(d.wake), u=toMin(settings.remUntil||"22:00");
+    wake=new Date(y,m-1,dd,0,w).getTime();
+    until=new Date(y,m-1,dd,0,u>w?u:u+1440).getTime();
+    on=true;
+  }
+  nat("scheduleWater", JSON.stringify({on, wake, until, every:+settings.remEvery||60, glasses:d.water, goal:settings.goals.water}));
+}
+function syncNative(){
+  if(!NATIVE) return;
+  const k=dateKey(new Date()); if(k!==today){ today=k; }
+  let changed=false;
+  const g=+nat("takePendingGlasses")||0;
+  if(g>0){ const d=day(); d.water+=g; for(let i=0;i<g;i++) d.waterTimes.push(nowMin()); changed=true; }
+  if(stepsAuto() && nat("stepPermission")){
+    const n=nat("getTodaySteps");
+    if(typeof n==="number" && n>=0 && n!==day().steps){ day().steps=n; changed=true; }
+  }
+  if(changed) save();
+  render();
+}
+window.onNativeChange = syncNative;
+
+/* ---------- local cache ---------- */
+function lsGet(k){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+const cachedS = lsGet("dh_settings"); if(cachedS) settings = Object.assign({},settings,cachedS,{goals:Object.assign({},settings.goals,cachedS.goals||{})});
+const cachedD = lsGet("dh_days"); if(cachedD) days = cachedD;
+
+function day(){ if(!days[today]) days[today]=emptyDay(today); return days[today]; }
+
+/* ---------- cloud save (debounced, one write at a time per doc) ---------- */
+const pending = {}; const writing = {}; const timers = {};
+function queueWrite(docId, data){
+  pending[docId] = data;
+  clearTimeout(timers[docId]);
+  timers[docId] = setTimeout(()=>flush(docId), 700);
+}
+async function flush(docId){
+  if(!db || !uid || writing[docId] || !pending[docId]) return;
+  const data = pending[docId]; delete pending[docId];
+  writing[docId] = true;
+  try{ await db.collection("data/users/"+uid).doc(docId).set(JSON.parse(JSON.stringify(data))); setSync("Synced ✓"); }
+  catch(e){ setSync("Saved on this device"); }
+  writing[docId] = false;
+  if(pending[docId]) flush(docId);
+}
+function save(){
+  pushNative();
+  lsSet("dh_days", trimDays());
+  queueWrite("day-"+today, day());
+}
+function saveSettings(){
+  pushNative();
+  lsSet("dh_settings", settings);
+  queueWrite("settings", settings);
+}
+function trimDays(){
+  const keys = Object.keys(days).sort().slice(-60); const o={}; keys.forEach(k=>o[k]=days[k]); return o;
+}
+function setSync(t){ $("syncState").textContent = t; }
+
+/* ---------- helpers ---------- */
+function toMin(t){ if(!t) return null; const [h,m]=t.split(":").map(Number); return h*60+m; }
+function sleepHours(d){
+  const b=toMin(d.bed), w=toMin(d.wake); if(b==null||w==null) return null;
+  let diff = w-b; if(diff<=0) diff += 1440; return diff/60;
+}
+function hm(mins){ const h=Math.floor(mins/60), m=Math.round(mins%60); return h+"h "+pad(m)+"m"; }
+function timeLabel(mins){
+  mins = ((mins%1440)+1440)%1440; let h=Math.floor(mins/60), m=mins%60; const ap=h>=12?"PM":"AM"; h=h%12||12; return h+":"+pad(m)+" "+ap;
+}
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("on"),1800); }
+function nowMin(){ const n=new Date(); return n.getHours()*60+n.getMinutes(); }
+
+/* ---------- render ---------- */
+function ring(pct,color,emoji){
+  const r=27, c=2*Math.PI*r, off=c*(1-clamp(pct,0,1));
+  return `<div class="ring"><svg width="64" height="64"><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="32" cy="32" r="${r}" fill="none" stroke="${color}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .5s"/></svg><span>${emoji}</span></div>`;
+}
+function render(){
+  const d=day(), g=settings.goals, n=new Date();
+  const hr=n.getHours();
+  $("greet").textContent = hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
+  $("todayLabel").textContent = n.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+
+  const sh = sleepHours(d);
+  const cal = d.foods.reduce((s,f)=>s+(+f.cal||0),0);
+
+  $("rings").innerHTML =
+    `<div>${ring(sh?sh/g.sleep:0,"var(--sleep)","😴")}<b>${sh?sh.toFixed(1)+"h":"–"}</b><small>Sleep</small></div>`+
+    `<div>${ring(d.water/g.water,"var(--water)","💧")}<b>${d.water}/${g.water}</b><small>Water</small></div>`+
+    `<div>${ring(d.steps/g.steps,"var(--steps)","👟")}<b>${d.steps>=1000?(d.steps/1000).toFixed(1)+"k":d.steps}</b><small>Steps</small></div>`+
+    `<div>${ring(cal/g.cal,"var(--cal)","🍽️")}<b>${fmt(cal)}</b><small>kcal</small></div>`;
+
+  // sleep
+  if(document.activeElement!==$("bedT")) $("bedT").value=d.bed;
+  if(document.activeElement!==$("wakeT")) $("wakeT").value=d.wake;
+  if(sh){
+    $("sleepHrs").textContent = hm(sh*60).replace("h "," h ").replace("m"," m");
+    $("sleepUnit").textContent = "";
+    $("sleepBar").style.width = clamp(sh/g.sleep*100,0,100)+"%";
+    const diff = sh-g.sleep;
+    $("sleepNote").textContent = diff>=0 ? "Great, you hit your "+g.sleep+" h goal." : "You slept "+hm(-diff*60)+" less than your "+g.sleep+" h goal.";
+  } else {
+    $("sleepHrs").textContent="–"; $("sleepUnit").textContent="hrs"; $("sleepBar").style.width="0";
+    $("sleepNote").textContent = d.wake ? "Add your bedtime to see how long you slept." : "Set your bedtime and wake-up time.";
+  }
+
+  // water
+  $("waterN").textContent=d.water; $("waterUnit").textContent="/ "+g.water+" glasses";
+  let gl=""; const total=Math.max(g.water,d.water);
+  for(let i=0;i<total;i++) gl+=`<div class="glass ${i<d.water?"full":""}"></div>`;
+  $("glasses").innerHTML=gl;
+  $("remToggle").textContent = "🔔 Reminders: "+(settings.remOn?"on":"off");
+  $("waterNext").textContent = nextReminderText();
+
+  // steps
+  $("stepsN").textContent=fmt(d.steps); $("stepsUnit").textContent="/ "+fmt(g.steps);
+  $("stepsBar").style.width=clamp(d.steps/g.steps*100,0,100)+"%";
+  if(stepsAuto()){
+    $("stepsManual").style.display="none"; $("stepsAuto").style.display="block";
+    $("stepsAuto").innerHTML = nat("stepPermission")
+      ? "Counted automatically by your phone, even when the app is closed."
+      : 'Step counting needs permission. <button class="chip" id="stepPerm">Allow step counting</button>';
+    const sp=$("stepPerm"); if(sp){ if(window._askedSteps) sp.textContent="Open app settings"; sp.onclick=()=>{ if(window._askedSteps) nat("openAppSettings"); else { window._askedSteps=true; nat("askPermissions"); } render(); }; }
+  }
+
+  // calories
+  $("calN").textContent=fmt(cal); $("calUnit").textContent="/ "+fmt(g.cal)+" kcal";
+  $("calBar").style.width=clamp(cal/g.cal*100,0,100)+"%";
+  $("calBar").style.background = cal>g.cal ? "#b91c1c" : "var(--cal)";
+  $("calLeft").textContent = cal>g.cal ? fmt(cal-g.cal)+" kcal over your goal" : fmt(g.cal-cal)+" kcal left today";
+  $("foodList").innerHTML = d.foods.length ? d.foods.map((f,i)=>
+    `<div class="food"><span>${escapeHtml(f.name)} <span class="muted">· ${f.t||""}</span></span><span class="row" style="gap:4px"><b>${fmt(f.cal)}</b><button class="x" data-del="${i}" aria-label="Remove">✕</button></span></div>`).join("")
+    : `<div class="muted">Nothing logged yet. Tap a food above or add your own.</div>`;
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ---------- week view ---------- */
+function renderWeek(){
+  const list=[]; for(let i=6;i>=0;i--){ const dt=new Date(); dt.setDate(dt.getDate()-i); const k=dateKey(dt); list.push({k, lbl:dt.toLocaleDateString("en-US",{weekday:"short"}).slice(0,2), d:days[k]||emptyDay(k)}); }
+  const g=settings.goals;
+  const block=(id,title,emoji,color,vals,goal,fmtv)=>{
+    const max=Math.max(goal,...vals,1); const done=vals.filter(v=>v>0);
+    const avg = done.length? done.reduce((a,b)=>a+b,0)/done.length : 0;
+    $(id).innerHTML = `<h2>${emoji} ${title}</h2><div class="row between"><div><span class="big" style="font-size:24px">${done.length?fmtv(avg):"–"}</span> <span class="unit">avg / day</span></div><span class="muted">${vals.filter(v=>v>=goal).length} of 7 days on goal</span></div>`+
+      `<div class="week">${vals.map((v,i)=>`<div class="col"><em>${v?fmtv(v):""}</em><i style="height:${v/max*80}%;background:${color};opacity:${list[i].k===today?1:.6}"></i><small>${list[i].lbl}</small></div>`).join("")}</div>`+
+      `<div class="goalline">Goal: ${fmtv(goal)}</div>`;
+  };
+  block("wk-sleep","Sleep","😴","var(--sleep)",list.map(x=>sleepHours(x.d)||0),g.sleep,v=>v.toFixed(1)+"h");
+  block("wk-water","Water","💧","var(--water)",list.map(x=>x.d.water||0),g.water,v=>Math.round(v)+"");
+  block("wk-steps","Steps","👟","var(--steps)",list.map(x=>x.d.steps||0),g.steps,v=>v>=1000?(v/1000).toFixed(1)+"k":Math.round(v)+"");
+  block("wk-cal","Calories","🍽️","var(--cal)",list.map(x=>(x.d.foods||[]).reduce((s,f)=>s+(+f.cal||0),0)),g.cal,v=>v>=1000?(v/1000).toFixed(1)+"k":Math.round(v)+"");
+}
+
+/* ---------- water reminders ---------- */
+let snoozeUntil = 0, lastAlertSlot = null, audioCtx = null;
+function reminderSlots(){
+  const d=day(); const w=toMin(d.wake); if(w==null||!settings.remOn) return [];
+  const end = toMin(settings.remUntil||"22:00"); const every=Math.max(15,+settings.remEvery||60);
+  const slots=[]; for(let t=w+every; t<=(end>w?end:end+1440) && t<w+1440; t+=every) slots.push(t);
+  return slots;
+}
+function nextReminderText(){
+  const d=day();
+  if(!settings.remOn) return "Water reminders are off.";
+  if(!d.wake) return "Hourly reminders start when you log your wake-up time.";
+  if(NATIVE){
+    if(!nat("notificationsAllowed")) return "Turn on notifications for this app to get water reminders.";
+    const ms=nat("nextReminder");
+    if(typeof ms==="number" && ms>0){ const t=new Date(ms); return "Next water reminder at "+timeLabel(t.getHours()*60+t.getMinutes())+". It rings even if the app is closed."; }
+    return "No more reminders today. Rest well!";
+  }
+  const now=nowMin(); const nxt=reminderSlots().find(t=>t>now);
+  return nxt!=null ? "Next water reminder at "+timeLabel(nxt)+"." : "No more reminders today. Rest well!";
+}
+function checkReminder(){
+  const k=dateKey(new Date()); if(k!==today){ today=k; render(); }
+  if(NATIVE) return;
+  const now=nowMin(); if(Date.now()<snoozeUntil) return;
+  const slots=reminderSlots().filter(t=>t<=now && now-t<30);
+  if(!slots.length) return;
+  const slot=slots[slots.length-1];
+  if(lastAlertSlot===today+":"+slot) return;
+  // skip if a glass was logged within the last 15 min
+  const lastDrink = day().waterTimes.slice(-1)[0];
+  if(lastDrink!=null && now-lastDrink<15){ lastAlertSlot=today+":"+slot; return; }
+  lastAlertSlot=today+":"+slot; showAlert();
+}
+function showAlert(){
+  const d=day(), left=Math.max(0,settings.goals.water-d.water);
+  $("alertText").textContent = left ? left+" more glass"+(left>1?"es":"")+" to reach today's goal." : "You've hit your goal. One more won't hurt!";
+  $("alertBanner").style.display="block";
+  beep();
+  try{ navigator.vibrate && navigator.vibrate([300,150,300]); }catch(e){}
+  try{ if(window.Notification && Notification.permission==="granted") new Notification("💧 Time to drink water",{body:$("alertText").textContent}); }catch(e){}
+}
+function hideAlert(){ $("alertBanner").style.display="none"; }
+function unlockAudio(){
+  try{ if(!audioCtx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) audioCtx=new AC(); } if(audioCtx&&audioCtx.state==="suspended") audioCtx.resume(); }catch(e){}
+}
+function beep(){
+  try{
+    if(!audioCtx) return;
+    const t0=audioCtx.currentTime;
+    [0,0.22,0.44].forEach((dt,i)=>{
+      const o=audioCtx.createOscillator(), gN=audioCtx.createGain();
+      o.type="sine"; o.frequency.value=[880,1046,1318][i];
+      gN.gain.setValueAtTime(0.0001,t0+dt); gN.gain.exponentialRampToValueAtTime(0.25,t0+dt+0.02); gN.gain.exponentialRampToValueAtTime(0.0001,t0+dt+0.2);
+      o.connect(gN).connect(audioCtx.destination); o.start(t0+dt); o.stop(t0+dt+0.22);
+    });
+  }catch(e){}
+}
+document.addEventListener("pointerdown", unlockAudio, {passive:true});
+
+/* ---------- actions ---------- */
+function addWater(n){
+  const d=day(); d.water=Math.max(0,d.water+n);
+  if(n>0) nat("noteDrink");
+  if(n>0) d.waterTimes.push(nowMin()); else d.waterTimes.pop();
+  save(); render();
+}
+$("waterPlus").onclick=()=>{ addWater(1); toast("💧 Nice! "+day().water+" glass"+(day().water>1?"es":"")+" today"); };
+$("waterMinus").onclick=()=>{ if(day().water>0) addWater(-1); };
+$("alertDrink").onclick=()=>{ addWater(1); hideAlert(); toast("💧 Logged. Keep it up!"); };
+$("alertSnooze").onclick=()=>{ snoozeUntil=Date.now()+10*60000; lastAlertSlot=null; hideAlert(); toast("I'll remind you in 10 min"); setTimeout(()=>{ if(Date.now()>=snoozeUntil-1000) showAlert(); },10*60000); };
+$("remToggle").onclick=()=>{ settings.remOn=!settings.remOn; saveSettings(); render(); };
+$("soundTest").onclick=()=>{
+  if(NATIVE){ if(!nat("notificationsAllowed")){ nat("askPermissions"); return; } nat("testNotification"); toast("🔔 Check your notifications"); return; } unlockAudio(); setTimeout(beep,50); try{ if(window.Notification && Notification.permission==="default") Notification.requestPermission().catch(()=>{}); }catch(e){} toast("🔊 That's the reminder sound"); };
+
+$("wokeBtn").onclick=()=>{
+  const n=new Date(); const d=day(); d.wake=pad(n.getHours())+":"+pad(n.getMinutes());
+  save(); render(); toast("☀️ Good morning! Water reminders are on."); unlockAudio();
+  if(!d.bed) setTimeout(()=>$("bedT").focus(),300);
+};
+$("bedT").onchange=e=>{ day().bed=e.target.value; save(); render(); };
+$("wakeT").onchange=e=>{ day().wake=e.target.value; save(); render(); };
+
+$("stepsSet").onclick=()=>{ const v=parseInt($("stepsIn").value,10); if(isNaN(v)||v<0) return toast("Enter a number"); day().steps=v; $("stepsIn").value=""; save(); render(); toast("👟 Steps saved"); };
+$("stepsIn").addEventListener("keydown",e=>{ if(e.key==="Enter") $("stepsSet").click(); });
+document.querySelectorAll("[data-addsteps]").forEach(b=>b.onclick=()=>{ day().steps+=+b.dataset.addsteps; save(); render(); });
+
+function addFood(name,cal){
+  const n=new Date(); day().foods.push({name, cal:+cal, t:timeLabel(n.getHours()*60+n.getMinutes())});
+  save(); render(); toast("🍽️ +"+cal+" kcal");
+}
+$("quickFoods").innerHTML = QUICK.map((q,i)=>`<button class="chip" data-q="${i}">${q[0]} · ${q[1]}</button>`).join("");
+$("quickFoods").onclick=e=>{ const b=e.target.closest("[data-q]"); if(b){ const q=QUICK[+b.dataset.q]; addFood(q[0],q[1]); } };
+$("foodAdd").onclick=()=>{
+  const name=$("foodName").value.trim(), cal=parseInt($("foodCal").value,10);
+  if(!name||isNaN(cal)) return toast("Add a food name and its calories");
+  addFood(name,cal); $("foodName").value=""; $("foodCal").value="";
+};
+$("foodCal").addEventListener("keydown",e=>{ if(e.key==="Enter") $("foodAdd").click(); });
+$("foodList").onclick=e=>{ const b=e.target.closest("[data-del]"); if(b){ day().foods.splice(+b.dataset.del,1); save(); render(); } };
+
+/* settings */
+function fillSettings(){
+  const g=settings.goals; $("gSleep").value=g.sleep; $("gWater").value=g.water; $("gSteps").value=g.steps; $("gCal").value=g.cal;
+  $("remEvery").value=settings.remEvery; $("remUntil").value=settings.remUntil;
+}
+[["gSleep","sleep"],["gWater","water"],["gSteps","steps"],["gCal","cal"]].forEach(([id,k])=>{
+  $(id).onchange=e=>{ const v=parseFloat(e.target.value); if(v>0){ settings.goals[k]=v; saveSettings(); render(); toast("Goal updated"); } };
+});
+$("remEvery").onchange=e=>{ const v=parseInt(e.target.value,10); if(v>=15){ settings.remEvery=v; saveSettings(); render(); toast("Reminder interval updated"); } };
+$("remUntil").onchange=e=>{ if(e.target.value){ settings.remUntil=e.target.value; saveSettings(); render(); } };
+
+/* nav */
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="v-"+b.dataset.view));
+  if(b.dataset.view==="week") renderWeek();
+  if(b.dataset.view==="settings") fillSettings();
+  window.scrollTo(0,0);
+});
+
+/* ---------- start ---------- */
+if(NATIVE){
+  $("soundTest").textContent="🔔 Test alert";
+  $("homeCard").style.display="none";
+  $("remTip").textContent="Reminders arrive as phone notifications, even when the app is closed. Tap “I drank a glass” on the notification to log it.";
+  $("syncState").textContent="Saved on this phone";
+  pushNative(); syncNative();
+  setInterval(()=>{ nat("refreshSteps"); }, 30000);
+}
+render(); fillSettings();
+setInterval(()=>{ checkReminder(); if($("v-today").classList.contains("on")) $("waterNext").textContent=nextReminderText(); }, 20000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ checkReminder(); syncNative(); render(); } });
+setTimeout(checkReminder, 1500);
+
+/* cloud sync: load once, then keep saving */
+(async function(){
+  try{
+    if(!window.claude || !window.claude.use) return;
+    const [dbNs, userNs] = await Promise.all([claude.use("db"), claude.use("user")]);
+    if(!dbNs || !userNs) return;
+    const id = await userNs.id(); if(!id) return;
+    db=dbNs; uid=id; setSync("Syncing…");
+    const timeout=setTimeout(()=>setSync("Saved on this device"),10000);
+    const snap = await db.collection("data/users/"+uid).get();
+    clearTimeout(timeout);
+    let gotToday=false;
+    snap.docs.forEach(s=>{
+      const v=s.data(); if(!v) return;
+      if(s.id==="settings"){ settings=Object.assign({},DEFAULT_SETTINGS,v,{goals:Object.assign({},DEFAULT_SETTINGS.goals,v.goals||{})}); }
+      else if(s.id.startsWith("day-") && v.date){
+        const local=days[v.date];
+        // keep whichever copy has more logged in it
+        const score=x=>x?(x.water||0)+(x.foods||[]).length+(x.steps?1:0)+(x.wake?1:0)+(x.bed?1:0):-1;
+        if(score(v)>=score(local)) days[v.date]=Object.assign(emptyDay(v.date),v);
+        if(v.date===today) gotToday=true;
+      }
+    });
+    lsSet("dh_days",trimDays()); lsSet("dh_settings",settings);
+    if(!gotToday && days[today] && (days[today].water||days[today].foods.length||days[today].wake||days[today].steps)) queueWrite("day-"+today, days[today]);
+    setSync("Synced ✓"); render(); fillSettings();
+    if($("v-week").classList.contains("on")) renderWeek();
+  }catch(e){ setSync("Saved on this device"); }
+})();
+})();
+</script>
+</body>
+</html>

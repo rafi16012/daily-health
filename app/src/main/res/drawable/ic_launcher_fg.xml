@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Water drop with a heartbeat line, centered in the 108dp adaptive-icon safe zone -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M54,28 C54,28 36,48 36,61 C36,71 44,79 54,79 C64,79 72,71 72,61 C72,48 54,28 54,28 Z" />
+    <path android:strokeColor="#0F766E" android:strokeWidth="3.2"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M41,62 L48,62 L51,55 L56,69 L60,58 L62,62 L67,62" />
+</vector>
