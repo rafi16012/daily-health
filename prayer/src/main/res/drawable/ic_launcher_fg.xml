@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gold crescent over a simple mosque dome, inside the 108dp adaptive-icon safe zone -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- dome + base -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M54,46 C44,46 37,54 37,63 L37,74 L71,74 L71,63 C71,54 64,46 54,46 Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M53,40 L55,40 L55,46 L53,46 Z" />
+    <!-- door -->
+    <path android:fillColor="#0B3B2E"
+        android:pathData="M54,62 C51,62 49.5,64.5 49.5,67 L49.5,74 L58.5,74 L58.5,67 C58.5,64.5 57,62 54,62 Z" />
+    <!-- crescent -->
+    <path android:fillColor="#E2BE62"
+        android:pathData="M54,29 A7,7 0 1,0 60.5,39 A5.6,5.6 0 1,1 54,29 Z" />
+</vector>

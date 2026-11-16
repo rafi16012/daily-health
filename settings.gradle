@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "DailyHealth"
-include ':app'
+include ':app', ':prayer'

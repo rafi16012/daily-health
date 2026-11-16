@@ -26,17 +26,21 @@ jobs:
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon --stacktrace
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk DailyHealth.apk
+      - name: Rename APKs
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk DailyHealth.apk
+          cp prayer/build/outputs/apk/debug/prayer-debug.apk SalahTracker.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: DailyHealth-apk
-          path: DailyHealth.apk
+          name: apks
+          path: |
+            DailyHealth.apk
+            SalahTracker.apk
 
       - name: Publish download link
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release delete latest --yes --cleanup-tag || true
-          gh release create latest DailyHealth.apk --title "Daily Health" --notes "Open this page on your Android phone and tap DailyHealth.apk to install."
+          gh release create latest DailyHealth.apk SalahTracker.apk --title "My apps" --notes "Open this page on your Android phone and tap an APK to install it."
