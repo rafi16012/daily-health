@@ -118,20 +118,21 @@ public final class Prayer {
         PendingIntent prayedPi = PendingIntent.getBroadcast(c, 10 + idx, prayed,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification n = new Notification.Builder(c, CHANNEL)
+        boolean verse = "verse".equals(p);
+        Notification.Builder nb = new Notification.Builder(c, CHANNEL)
                 .setSmallIcon(R.drawable.ic_notif)
                 .setColor(0xFF0B3B2E)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setStyle(new Notification.BigTextStyle().bigText(text))
                 .setContentIntent(openPi)
-                .addAction(new Notification.Action.Builder(null, "✅ I prayed", prayedPi).build())
                 .setAutoCancel(true)
-                .setCategory(Notification.CATEGORY_REMINDER)
-                .build();
+                .setCategory(Notification.CATEGORY_REMINDER);
+        if (!verse) nb.addAction(new Notification.Action.Builder(null, "✅ I prayed", prayedPi).build());
+        Notification n = nb.build();
         try {
             NotificationManager nm = c.getSystemService(NotificationManager.class);
-            if (nm != null) nm.notify(1 + idx, n);
+            if (nm != null) nm.notify(verse ? 6 : 1 + idx, n);
         } catch (SecurityException ignored) {}
     }
 

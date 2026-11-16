@@ -188,5 +188,39 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface public void requestLocation() { act.runOnUiThread(act::requestLocation); }
+
+        /** Download text from an https URL off the main thread; result goes to window.onNativeFetch(id, body|null). */
+        @JavascriptInterface public void fetch(String url, String id) {
+            new Thread(() -> {
+                String body = null;
+                java.net.HttpURLConnection conn = null;
+                try {
+                    if (!url.startsWith("https://")) throw new IllegalArgumentException();
+                    conn = (java.net.HttpURLConnection) new java.net.URL(url).openConnection();
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(15000);
+                    if (conn.getResponseCode() == 200) {
+                        java.io.InputStream in = conn.getInputStream();
+                        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+                        byte[] buf = new byte[8192];
+                        int r;
+                        while ((r = in.read(buf)) > 0) out.write(buf, 0, r);
+                        body = out.toString("UTF-8");
+                    }
+                } catch (Exception ignored) {
+                } finally {
+                    if (conn != null) conn.disconnect();
+                }
+                act.js("window.onNativeFetch && window.onNativeFetch(" + JSONObject.quote(id) + ","
+                        + (body == null ? "null" : JSONObject.quote(body)) + ")");
+            }).start();
+        }
+
+        @JavascriptInterface public void copy(String text) {
+            act.runOnUiThread(() -> {
+                android.content.ClipboardManager cm = c.getSystemService(android.content.ClipboardManager.class);
+                if (cm != null) cm.setPrimaryClip(android.content.ClipData.newPlainText("Quran verse", text));
+            });
+        }
     }
 }
